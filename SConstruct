@@ -136,8 +136,10 @@ else:
     libpath = [
       f"#third_party/acados/{arch}/lib",
       f"#third_party/libyuv/{arch}/lib",
-      "/usr/lib",
-      "/usr/local/lib",
+      #"/usr/lib",
+      #"/usr/local/lib",
+      "/usr/lib/aarch64-linux-gnu",
+      "/usr/lib/aarch64-linux-gnu/14",
     ]
 
 if GetOption('asan'):
@@ -218,7 +220,7 @@ if GetOption('compile_db'):
   env.CompilationDatabase('compile_commands.json')
 
 # Setup cache dir
-cache_dir = '/data/scons_cache' if AGNOS else '/tmp/scons_cache'
+cache_dir = '/data/scons_cache'
 CacheDir(cache_dir)
 Clean(["."], cache_dir)
 
@@ -359,11 +361,11 @@ SConscript(['third_party/SConscript'])
 
 SConscript(['selfdrive/SConscript'])
 
-if Dir('#tools/cabana/').exists() and GetOption('extras'):
-  SConscript(['tools/replay/SConscript'])
-  if arch != "larch64":
-    SConscript(['tools/cabana/SConscript'])
-
-external_sconscript = GetOption('external_sconscript')
-if external_sconscript:
-  SConscript([external_sconscript])
+#if Dir('#tools/cabana/').exists() and GetOption('extras'):
+#  SConscript(['tools/replay/SConscript'])
+#  if arch != "larch64":
+#    SConscript(['tools/cabana/SConscript'])
+#
+#external_sconscript = GetOption('external_sconscript')
+#if external_sconscript:
+#  SConscript([external_sconscript])

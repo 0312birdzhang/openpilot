@@ -1,5 +1,6 @@
 #include "selfdrive/ui/qt/api.h"
 
+#include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 
@@ -19,22 +20,24 @@
 
 namespace CommaApi {
 
-RSA *get_rsa_private_key() {
-  static std::unique_ptr<RSA, decltype(&RSA_free)> rsa_private(nullptr, RSA_free);
-  if (!rsa_private) {
+EVP_PKEY *get_rsa_private_key() {
+  static std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)> pkey(nullptr, EVP_PKEY_free);
+  if (!pkey) {
     FILE *fp = fopen(Path::rsa_file().c_str(), "rb");
     if (!fp) {
       qDebug() << "No RSA private key found, please run manager.py or registration.py";
       return nullptr;
     }
-    rsa_private.reset(PEM_read_RSAPrivateKey(fp, NULL, NULL, NULL));
+    pkey.reset(PEM_read_PrivateKey(fp, NULL, NULL, NULL));
     fclose(fp);
   }
-  return rsa_private.get();
+  return pkey.get();
 }
 
+
 QByteArray rsa_sign(const QByteArray &data) {
-  RSA *rsa_private = get_rsa_private_key();
+  EVP_PKEY *pkey = get_rsa_private_key();
+  RSA *rsa_private = EVP_PKEY_get0_RSA(pkey);
   if (!rsa_private) return {};
 
   QByteArray sig(RSA_size(rsa_private), Qt::Uninitialized);
