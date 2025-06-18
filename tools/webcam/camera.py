@@ -1,36 +1,35 @@
-import av
-import cv2 as cv
+import subprocess
+import os
 
 class Camera:
   def __init__(self, cam_type_state, stream_type, camera_id):
-    try:
-      camera_id = int(camera_id)
-    except ValueError: # allow strings, ex: /dev/video0
-      pass
     self.cam_type_state = cam_type_state
     self.stream_type = stream_type
     self.cur_frame_id = 0
+    self.W, self.H = 1920, 1080
+    self.frame_size = self.W * self.H * 3 // 2  # NV12 格式大小
+    self.proc = self._start_gst_pipeline()
 
-    self.cap = cv.VideoCapture(camera_id)
-    self.W = self.cap.get(cv.CAP_PROP_FRAME_WIDTH)
-    self.H = self.cap.get(cv.CAP_PROP_FRAME_HEIGHT)
-
-  @classmethod
-  def bgr2nv12(self, bgr):
-    frame = av.VideoFrame.from_ndarray(bgr, format='bgr24')
-    return frame.reformat(format='nv12').to_ndarray()
+  def _start_gst_pipeline(self):
+    env = os.environ.copy()
+    env["GST_PLUGIN_PATH"] = "/usr/lib/gstreamer-1.0:" + env.get("GST_PLUGIN_PATH", "")
+    env["LD_LIBRARY_PATH"] = "/usr/lib:" + env.get("LD_LIBRARY_PATH", "")
+    cmd = [
+        "gst-launch-1.0", "-q", "qtiqmmfsrc", "camera=0", "name=camsrc",
+        "!", f"video/x-raw,format=NV12,width={self.W},height={self.H},framerate=30/1",
+        "!", "fdsink", "fd=1"
+    ]
+    return subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=10**8, env=env)
 
   def read_frames(self):
     try:
       while True:
-        sts , frame = self.cap.read()
-        if not sts:
-          print ("cv no sts")
+        raw = self.proc.stdout.read(self.frame_size)
+        if len(raw) != self.frame_size:
+          print("❌ 未获取完整帧")
           break
-        # Rotate the frame 180 degrees (flip both axes)
-        frame = cv.flip(frame, -1)
-        yuv = Camera.bgr2nv12(frame)
-        yield yuv.data.tobytes()
-    except cv.error as error:
-      print(f"cv error: {error}")
-    self.cap.release()
+        yield raw  # 直接返回原始 NV12 数据
+    except Exception as e:
+      print(f"读取帧出错: {e}")
+    self.proc.terminate()
+
