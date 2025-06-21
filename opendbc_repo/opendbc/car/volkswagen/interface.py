@@ -87,4 +87,7 @@ class CarInterface(CarInterfaceBase):
     ret.vEgoStopping = 0.5
     ret.autoResumeSng = ret.minEnableSpeed == -1
 
+    if dp_params & structs.DPFlags.VagAvoidEPSLockout:
+      ret.flags |= VolkswagenFlags.AVOID_EPS_LOCKOUT.value
+
     return ret

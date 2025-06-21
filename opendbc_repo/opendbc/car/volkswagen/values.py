@@ -144,6 +144,8 @@ class VolkswagenFlags(IntFlag):
   # Static flags
   PQ = 2
 
+  AVOID_EPS_LOCKOUT = 2 ** 2
+
 
 @dataclass
 class VolkswagenMQBPlatformConfig(PlatformConfig):
