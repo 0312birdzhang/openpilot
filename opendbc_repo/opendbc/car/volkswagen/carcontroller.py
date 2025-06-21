@@ -13,7 +13,7 @@ LongCtrlState = structs.CarControl.Actuators.LongControlState
 class CarController(CarControllerBase):
   def __init__(self, dbc_names, CP):
     super().__init__(dbc_names, CP)
-    self.CCP = CarControllerParams(CP, CP.flags & VolkswagenFlags.AVOID_EPS_LOCKOUT)
+    self.CCP = CarControllerParams(CP)
     self.CCS = pqcan if CP.flags & VolkswagenFlags.PQ else mqbcan
     self.packer_pt = CANPacker(dbc_names[Bus.pt])
     self.ext_bus = CANBUS.pt if CP.networkLocation == structs.CarParams.NetworkLocation.fwdCamera else CANBUS.cam
