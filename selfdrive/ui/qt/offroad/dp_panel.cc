@@ -333,6 +333,8 @@ void DPPanel::add_device_toggles() {
 
   auto auto_shutdown_toggle = new ParamSpinBoxControl("dp_device_auto_shutdown_in", tr("Auto Shutdown In:"), tr("0 mins = Immediately"), "", -5, 300, 5, tr(" mins"), tr("Off"));
 
+  auto delay_loggerd_toggle = new ParamSpinBoxControl("dp_dev_delay_loggerd", tr("Delay Starting Loggerd for:"), tr("Delays the startup of loggerd and its related processes when the device goes on-road. This prevents the initial moments of a drive from being recorded, protecting location privacy at the start of a trip."), "", 0, 300, 5, tr(" secs"), tr("Off"));
+
   QWidget *label = nullptr;
   bool has_toggle = false;
 
@@ -342,6 +344,8 @@ void DPPanel::add_device_toggles() {
       label = new LabelControl(title, "");
       addItem(label);
       addItem(auto_shutdown_toggle);
+      addItem(delay_loggerd_toggle);
+      has_toggle = true;
       continue;
     }
     if ((param == "dp_device_is_rhd" || param == "dp_device_monitoring_disabled" || param == "dp_device_beep") && !disable_driver) {
