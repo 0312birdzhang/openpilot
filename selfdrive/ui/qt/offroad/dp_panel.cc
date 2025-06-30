@@ -207,6 +207,8 @@ void DPPanel::add_device_toggles() {
     },
   };
 
+  auto delay_loggerd_toggle = new ParamSpinBoxControl("dp_dev_delay_loggerd", tr("Delay Starting Loggerd for:"), tr("Delays the startup of loggerd and its related processes when the device goes on-road. This prevents the initial moments of a drive from being recorded, protecting location privacy at the start of a trip."), "", 0, 300, 5, tr(" secs"), tr("Off"));
+
   QWidget *label = nullptr;
   bool has_toggle = false;
 
@@ -214,6 +216,8 @@ void DPPanel::add_device_toggles() {
     if (param.isEmpty()) {
       label = new LabelControl(title, "");
       addItem(label);
+      addItem(delay_loggerd_toggle);
+      has_toggle = true;
       continue;
     }
 
