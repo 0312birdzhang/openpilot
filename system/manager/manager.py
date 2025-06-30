@@ -189,8 +189,6 @@ def manager_thread() -> None:
     if started != started_prev:
       write_onroad_params(started, params)
 
-    started_prev = started
-
     dp_ignore: list[str] = []
     if started and not started_prev:
       dp_dev_delay_time_started = time.time()
@@ -202,6 +200,8 @@ def manager_thread() -> None:
       for name, delay_time in dp_dev_delay_start_times.items():
         if cur_time - dp_dev_delay_time_started < delay_time: # type: ignore
           dp_ignore.append(name)
+
+    started_prev = started
 
     ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=list(set(ignore) | set(dp_ignore)))
 
