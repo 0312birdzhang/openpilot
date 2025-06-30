@@ -16,15 +16,37 @@ from opendbc.can.parser import CANParser
 from opendbc.car.structs import RadarData
 from typing import List, Tuple
 
-DREL_OFFSET = -1.3 # car head to radar
+# car head to radar
+DREL_OFFSET = -1.35
+
+# max object amount will process
 MAX_OBJECTS = 100
-MAX_LAT_DIST = 2.4 # lat distance
 
+# lat distance, typically max lane width is 3.7m
+MAX_LAT_DIST = 3.6
+
+# objects to ignore thats really close to the vehicle (after DREL_OFFSET applied)
+MIN_DIST = 2.5
+
+# when a object has really large negative v_rel means its stationary / standstill
+# so with the values below (v_rel = -10, lat_dist = 2.), we are trying to ignore:
+# when the ego vehicle is driving above 36 km/h (22.37 mph), we will ignore objects that lateral distance is above 2m on left or right.
+STATIONARY_OBJ_VREL = -10.
+STATIONARY_OBJ_LAT_DIST = 2.
+
+# when we detect an object that's really closed to the ego vehicle
+# we ignore the objects that's away from left or right
 CLOSED_OBJ_DREL = 10
-CLOSED_OBJ_YREL = 1.85
+CLOSED_OBJ_YREL = 2.
 
-NOT_SEEN_INIT = 8
+# ignore objects that has small radar cross sections (-64 ~ 63.5)
+MIN_RCS = -5.
 
+# ignore oncoming objects
+IGNORE_OBJ_STATE = 2
+
+# ignore objects that we haven't seen for 5 secs
+NOT_SEEN_INIT = 33*5
 
 def _create_radar_parser():
   messages = [("Status", 0), ("ObjectData", 0)]
@@ -67,56 +89,51 @@ class RadarInterface(RadarInterfaceBase):
 
   # called by card.py, 100hz
   def update(self, can_strings):
-    ret = RadarData()
-    if not self.rcp.can_valid:
-      ret.errors.canError = True
-
     vls = self.rcp.update_strings(can_strings)
     self.updated_messages.update(vls)
 
     if 1546 in self.updated_messages:
-      # prep for next loop
-      cpt = self.rcp.vl['Status']
-
-      # find the keys to decay/remove
-      keys_to_remove = [key for key in self.pts if key not in self._pts_cache]
-      for key in keys_to_remove:
-        self._pts_not_seen[key] -= 1
-        if self._pts_not_seen[key] <= 0:
-          del self.pts[key]
-
-      self.pts.update(self._pts_cache)
       self._should_clear_cache = True
 
     if 1547 in self.updated_messages:
       parsable_can_string, size = self._create_parsable_object_can_strings(can_strings)
       self.rcp.update_strings(parsable_can_string)
 
-      # do not clear cache until we see a new 0x60b, in case we don't receive
+      # clean cache when we see a 0x60a then a 0x60b
       if self._should_clear_cache:
         self._pts_cache.clear()
         self._should_clear_cache = False
 
       for i in range(size):
         cpt = self.rcp.vl[f'ObjectData_{i}']
-
-        track_id = int(cpt['ID'])
+        track_id = cpt['ID']
 
         d_rel = float(cpt['DistLong']) + DREL_OFFSET
         y_rel = -float(cpt['DistLat'])
 
-        if d_rel < 0:
+        # ignore oncoming objects
+        if int(cpt['DynProp']) == IGNORE_OBJ_STATE:
           continue
 
-        if float(cpt['RCS']) < 0:
-          continue
+        # only apply filters below when object is a point (0) not a vehicle (1)
+        if int(cpt['Class']) == 0:
+          # ignore really closed objects
+          if d_rel < MIN_DIST:
+            continue
 
-        if abs(y_rel) > MAX_LAT_DIST:
-          continue
+          # ignore objects with really small radar cross sections
+          if float(cpt['RCS']) < MIN_RCS:
+            continue
 
-        if d_rel < CLOSED_OBJ_DREL and abs(y_rel) > CLOSED_OBJ_YREL:
-          continue
+          # ignore far left/right objects
+          if abs(y_rel) > MAX_LAT_DIST:
+            continue
 
+          # ignore closed left/right objects when closed
+          if d_rel < CLOSED_OBJ_DREL and abs(y_rel) > CLOSED_OBJ_YREL:
+            continue
+
+        # add to cache
         if track_id not in self._pts_cache:
           self._pts_cache[track_id] = RadarData.RadarPoint()
           self._pts_cache[track_id].trackId = track_id
@@ -131,5 +148,20 @@ class RadarInterface(RadarInterfaceBase):
 
     self.updated_messages.clear()
 
-    ret.points = list(self.pts.values())
-    return ret
+    if self.frame % 3 == 0:
+      keys_to_remove = [key for key in self.pts if key not in self._pts_cache]
+      for key in keys_to_remove:
+        self._pts_not_seen[key] -= 1
+        if self._pts_not_seen[key] <= 0:
+          del self.pts[key]
+
+      self.pts.update(self._pts_cache)
+
+      ret = RadarData()
+      if not self.rcp.can_valid:
+        ret.errors.canError = True
+
+      ret.points = list(self.pts.values())
+      return ret
+
+    return None

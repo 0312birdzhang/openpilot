@@ -1483,4 +1483,3 @@ BO_ 482 ObjectData_99: 8 RADAR
 CM_ BO_ 482 "Object detection and tracking information";
 VAL_ 482 DynProp 0 "moving" 1 "stationary" 2 "oncoming" 3 "crossing_left" 4 "crossing_right" 5 "unknown" 6 "stopped";
 VAL_ 482 Class 0 "point" 1 "vehicle";
-
