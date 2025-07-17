@@ -54,12 +54,12 @@ import subprocess
 devs = subprocess.check_output('python3 -c "from tinygrad import Device; print(list(Device.get_available_devices()))"', shell=True)
 print("Available tinygrad devices:", devs)
 
-if b"QCOM" in devs:
+if b"GPU" in devs:
+  flags = 'GPU=1'
+elif b"QCOM" in devs:
   flags = 'QCOM=1'
 elif b"METAL" in devs:
   flags = 'METAL=1 IMAGE=0 NOLOCALS=0'
-elif b"GPU" in devs:
-  flags = 'GPU=1'
 elif b"LLVM" in devs:
   flags = 'LLVM=1 LLVMOPT=1 BEAM=0 IMAGE=0 JIT=2'
 else:

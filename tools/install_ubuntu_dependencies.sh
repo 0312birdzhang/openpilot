@@ -55,16 +55,19 @@ function install_ubuntu_common_requirements() {
     libsqlite3-dev \
     libsystemd-dev \
     locales \
-    opencl-headers \
-    ocl-icd-libopencl1 \
-    ocl-icd-opencl-dev \
     portaudio19-dev \
     qttools5-dev-tools \
     libqt5svg5-dev \
-    libqt5serialbus5-dev  \
     libqt5x11extras5-dev \
     libqt5opengl5-dev \
+    libtool libtool-bin automake autoconf m4 libltdl-dev \
+    autoconf automake \
+    libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libx11-xcb-dev \
     xvfb
+  $SUDO rm -rf /usr/local/lib/libstdc++*
+  $SUDO rm -rf /lib/libstdc++.so*
+  $SUDO ln -s /usr/lib/aarch64-linux-gnu/libm.so.6 /lib/libm.so.6
+  $SUDO ln -s /usr/lib/aarch64-linux-gnu/libc.so.6 /lib/libc.so.6
 }
 
 # Install Ubuntu 24.04 LTS packages
@@ -105,7 +108,6 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="3801", ATTRS{idProduct}=="ddcf", MODE="0666"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="3801", ATTRS{idProduct}=="ddef", MODE="0666"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="bbaa", ATTRS{idProduct}=="ddcf", MODE="0666"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="bbaa", ATTRS{idProduct}=="ddef", MODE="0666"
-
 EOF
 
     # Setup panda udev rules
