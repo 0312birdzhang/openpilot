@@ -9,7 +9,7 @@ from openpilot.system.manager.process import PythonProcess, NativeProcess, Daemo
 
 FLASK_AVAILABLE = importlib.util.find_spec("flask") is not None
 
-WEBCAM = os.getenv("USE_WEBCAM") is not None
+WEBCAM = True #os.getenv("USE_WEBCAM") is not None
 
 def driverview(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started or params.get_bool("IsDriverViewEnabled")
