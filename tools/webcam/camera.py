@@ -1,39 +1,42 @@
-import av
-import cv2 as cv
+import subprocess
+import os
 
 class Camera:
   def __init__(self, cam_type_state, stream_type, camera_id):
-    try:
-      camera_id = int(camera_id)
-    except ValueError: # allow strings, ex: /dev/video0
-      pass
     self.cam_type_state = cam_type_state
     self.stream_type = stream_type
     self.cur_frame_id = 0
+    self.W, self.H = 1280, 720
+    self.frame_size = self.W * self.H * 3 // 2  # NV12 格式大小
+    self.proc = self._start_gst_pipeline()
 
-    print(f"Opening {cam_type_state} at {camera_id}")
+  def _start_gst_pipeline(self):
+    env = os.environ.copy()
+    env["GST_PLUGIN_PATH"] = "/usr/lib/gstreamer-1.0:" + env.get("GST_PLUGIN_PATH", "")
+    env["LD_LIBRARY_PATH"] = "/usr/lib:" + env.get("LD_LIBRARY_PATH", "")
 
-    self.cap = cv.VideoCapture(camera_id)
+    # GStreamer pipeline with rotation
+    gst_command = f"""
+    export GST_PLUGIN_PATH="{env['GST_PLUGIN_PATH']}";
+    export LD_LIBRARY_PATH="{env['LD_LIBRARY_PATH']}";
+    gst-launch-1.0 -q qtiqmmfsrc camera=0 name=camsrc \
+        ! video/x-raw,format=NV12,width={self.W},height={self.H},framerate=25/1 \
+        ! videoflip method=rotate-180 \
+        ! fdsink fd=1
+    """
 
-    self.cap.set(cv.CAP_PROP_FRAME_WIDTH, 1280.0)
-    self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, 720.0)
-    self.cap.set(cv.CAP_PROP_FPS, 25.0)
+    # Use sudo with -E to preserve environment
+    cmd = ["sudo", "-E", "bash", "-c", gst_command]
 
-    self.W = self.cap.get(cv.CAP_PROP_FRAME_WIDTH)
-    self.H = self.cap.get(cv.CAP_PROP_FRAME_HEIGHT)
-
-  @classmethod
-  def bgr2nv12(self, bgr):
-    frame = av.VideoFrame.from_ndarray(bgr, format='bgr24')
-    return frame.reformat(format='nv12').to_ndarray()
+    return subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=10**8, env=env)
 
   def read_frames(self):
-    while True:
-      ret, frame = self.cap.read()
-      if not ret:
-        break
-      # Rotate the frame 180 degrees (flip both axes)
-      frame = cv.flip(frame, -1)
-      yuv = Camera.bgr2nv12(frame)
-      yield yuv.data.tobytes()
-    self.cap.release()
+    try:
+      while True:
+        raw = self.proc.stdout.read(self.frame_size)
+        if len(raw) != self.frame_size:
+          break
+        yield raw
+    except Exception as e:
+      print(f"{e}")
+    self.proc.terminate()
