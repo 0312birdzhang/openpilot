@@ -68,8 +68,6 @@ class SelfdriveD:
 
     self.disable_dm = self.params.get_int("DisableDM")
 
-    self.sensor_packet.remove("gyroscope")
-    self.sensor_packet.remove("accelerometer")
 
     # TODO: de-couple selfdrived with card/conflate on carState without introducing controls mismatches
     self.car_state_sock = messaging.sub_sock('carState', timeout=20)
