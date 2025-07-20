@@ -16,9 +16,9 @@ class Camera:
     #self.cap = cv.VideoCapture(camera_id)
     self.cap = cv.VideoCapture(f"gst-launch-1.0 v4l2src device={camera_id} io-mode=2 ! image/jpeg, width=1280, height=720, framerate=30/1, format=MJPG ! jpegdec ! videoconvert ! appsink", cv.CAP_GSTREAMER)
 
-    self.cap.set(cv.CAP_PROP_FRAME_WIDTH, 1280.0)
-    self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, 720.0)
-    self.cap.set(cv.CAP_PROP_FPS, 30)
+    #self.cap.set(cv.CAP_PROP_FRAME_WIDTH, 1280.0)
+    #self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, 720.0)
+    #self.cap.set(cv.CAP_PROP_FPS, 25)
 
     self.W = self.cap.get(cv.CAP_PROP_FRAME_WIDTH)
     self.H = self.cap.get(cv.CAP_PROP_FRAME_HEIGHT)

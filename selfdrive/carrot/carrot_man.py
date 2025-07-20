@@ -245,7 +245,7 @@ class CarrotMan:
     self.carrot_serv = CarrotServ()
 
     self.show_panda_debug = False
-    self.broadcast_ip = self.get_broadcast_address()
+    self.broadcast_ip = "192.168.240.1"#self.get_broadcast_address()
     self.broadcast_port = 7705
     self.carrot_man_port = 7706
     self.connection = None
@@ -339,9 +339,11 @@ class CarrotMan:
             if ip_address != self.ip_address:
               self.ip_address = ip_address
               self.remote_addr = None
+            self.ip_address = "192.168.240.1"
             self.params_memory.put_nonblocking("NetworkAddress", self.ip_address)
 
             msg = self.make_send_message()
+            self.broadcast_ip = "192.168.240.1"
             if self.broadcast_ip is not None:
               dat = msg.encode('utf-8')
               sock.sendto(dat, (self.broadcast_ip, self.broadcast_port))
