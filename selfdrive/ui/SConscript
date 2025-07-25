@@ -16,7 +16,7 @@ if arch == "Darwin":
 
 # FIXME: remove this once we're on 5.15 (24.04)
 qt_env['CXXFLAGS'] += ["-Wno-deprecated-declarations"]
-
+qt_env.ParseConfig('pkg-config --cflags --libs libavcodec libavformat libavutil')
 qt_util = qt_env.Library("qt_util", ["#selfdrive/ui/qt/api.cc", "#selfdrive/ui/qt/util.cc"], LIBS=base_libs)
 widgets_src = ["qt/widgets/input.cc", "qt/widgets/wifi.cc", "qt/prime_state.cc",
                "qt/widgets/ssh_keys.cc", "qt/widgets/toggle.cc", "qt/widgets/controls.cc",
@@ -54,13 +54,13 @@ def is_running_on_wsl2():
   except FileNotFoundError:
     return False
   
-if is_running_on_wsl2():
-  qt_env.Append(CXXFLAGS=['-DWSL2'])
-  base_libs.remove('OmxCore')
-  qt_libs.remove('OmxCore')
-  qt_src.remove("qt/screenrecorder/screenrecorder.cc")
-  qt_src.remove("qt/screenrecorder/omx_encoder.cc")
-  print("Building for WSL2. Removing Screen Recorder")
+#if is_running_on_wsl2():
+qt_env.Append(CXXFLAGS=['-DWSL2'])
+base_libs.remove('OmxCore')
+qt_libs.remove('OmxCore')
+qt_src.remove("qt/screenrecorder/screenrecorder.cc")
+qt_src.remove("qt/screenrecorder/omx_encoder.cc")
+print("Building for WSL2. Removing Screen Recorder")
 
 # build translation files
 with open(File("translations/languages.json").abspath) as f:
