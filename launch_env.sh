@@ -15,3 +15,4 @@ fi
 
 export STAGING_ROOT="/data/safe_staging"
 export DISABLE_DRIVER=1
+export ROAD_CAM=$(ls -l /dev/v4l/by-id/ |grep index0|grep Generic|awk -F'video' '{print $NF}')
