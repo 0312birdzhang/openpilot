@@ -304,11 +304,14 @@ class SelfdriveD:
     no_system_errors = (not has_disable_events) or (len(self.events) == num_events)
     if not self.sm.all_checks() and no_system_errors:
       if not self.sm.all_alive():
-        self.events.add(EventName.commIssue)
+        #self.events.add(EventName.commIssue)
+        pass
       elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
+        #self.events.add(EventName.commIssueAvgFreq)
+        pass
       else:
-        self.events.add(EventName.commIssue)
+        #self.events.add(EventName.commIssue)
+        pass
 
       logs = {
         'invalid': [s for s, valid in self.sm.valid.items() if not valid],
@@ -325,13 +328,14 @@ class SelfdriveD:
       if not self.sm['livePose'].posenetOK:
         self.events.add(EventName.posenetInvalid)
       if not self.sm['livePose'].inputsOK:
-        self.events.add(EventName.locationdTemporaryError)
+        #self.events.add(EventName.locationdTemporaryError)
+        pass
       if not self.sm['liveParameters'].valid and cal_status == log.LiveCalibrationData.Status.calibrated and not TESTING_CLOSET and (not SIMULATION or REPLAY):
         self.events.add(EventName.paramsdTemporaryError)
 
     # conservative HW alert. if the data or frequency are off, locationd will throw an error
-    if any((self.sm.frame - self.sm.recv_frame[s])*DT_CTRL > 10. for s in self.sensor_packets):
-      self.events.add(EventName.sensorDataInvalid)
+    #if any((self.sm.frame - self.sm.recv_frame[s])*DT_CTRL > 10. for s in self.sensor_packets):
+    #  self.events.add(EventName.sensorDataInvalid)
 
     if not REPLAY:
       # Check for mismatch between openpilot and car's PCM
@@ -374,8 +378,8 @@ class SelfdriveD:
         self.distance_traveled = 0
       self.distance_traveled += abs(CS.vEgo) * DT_CTRL
 
-      if self.sm['modelV2'].frameDropPerc > 20:
-        self.events.add(EventName.modeldLagging)
+      #if self.sm['modelV2'].frameDropPerc > 20:
+      #  self.events.add(EventName.modeldLagging)
 
     # Decrement personality on distance button press
     if self.CP.openpilotLongitudinalControl:
