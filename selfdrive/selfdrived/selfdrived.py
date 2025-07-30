@@ -75,7 +75,9 @@ class SelfdriveD:
       # no vipc in replay will make them ignored anyways
       ignore += ['roadCameraState', 'wideRoadCameraState']
     if os.getenv("DISABLE_DRIVER"):
-      ignore += ['driverCameraState']
+      ignore += ['driverCameraState', 'driverMonitoringState', 'wideRoadCameraState', 'driverAssistance']
+      ignore += ['livePose', 'liveDelay', 'liveParameters','liveTorqueParameters']
+
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                    'carOutput', 'driverMonitoringState', 'longitudinalPlan', 'livePose', 'liveDelay',
                                    'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters',
@@ -288,7 +290,8 @@ class SelfdriveD:
       elif self.sm['radarState'].radarErrors.radarUnavailableTemporary:
         self.events.add(EventName.radarTempUnavailable)
       else:
-        self.events.add(EventName.radarFault)
+        #self.events.add(EventName.radarFault)
+        pass
     if not self.sm.valid['pandaStates']:
       self.events.add(EventName.usbError)
     if CS.canTimeout:
@@ -365,7 +368,8 @@ class SelfdriveD:
       # Not show in first 1.5 km to allow for driving out of garage. This event shows after 5 minutes
       gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
       if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
-        self.events.add(EventName.noGps)
+        #self.events.add(EventName.noGps)
+        pass
       if gps_ok:
         self.distance_traveled = 0
       self.distance_traveled += abs(CS.vEgo) * DT_CTRL
