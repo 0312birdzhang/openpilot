@@ -245,7 +245,7 @@ class CarrotMan:
     self.carrot_serv = CarrotServ()
 
     self.show_panda_debug = False
-    self.broadcast_ip = "192.168.240.1"#self.get_broadcast_address()
+    self.broadcast_ip = self.get_broadcast_address()
     self.broadcast_port = 7705
     self.carrot_man_port = 7706
     self.connection = None
@@ -283,7 +283,7 @@ class CarrotMan:
 
   def get_broadcast_address(self):
     if PC:
-      iface = b'waydroid0'
+      iface = b'br0'
     else:
       iface = b'wlan0'
     try:
