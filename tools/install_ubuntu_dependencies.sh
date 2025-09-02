@@ -44,16 +44,17 @@ function install_ubuntu_common_requirements() {
     libglew-dev \
     libgles2-mesa-dev \
     libglfw3-dev \
-    libglib2.0-0 \
+    libglib2.0-0t64 \
     libjpeg-dev \
     libqt5charts5-dev \
-    libncurses5-dev \
+    libncurses-dev \
     libssl-dev \
     libusb-1.0-0-dev \
     libzmq3-dev \
     libzstd-dev \
     libsqlite3-dev \
     libsystemd-dev \
+    libicu-dev \
     locales \
     opencl-headers \
     ocl-icd-libopencl1 \
@@ -64,7 +65,6 @@ function install_ubuntu_common_requirements() {
     qttools5-dev-tools \
     qtpositioning5-dev \
     libqt5svg5-dev \
-    libqt5serialbus5-dev  \
     libqt5x11extras5-dev \
     libqt5opengl5-dev
 }

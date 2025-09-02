@@ -80,13 +80,13 @@ function launch {
     echo "Flask already installed."
   else
     echo "Flask installing."
-    pip install flask
+    uv pip install flask
   fi
   if python -c "import shapely" > /dev/null 2>&1; then
     echo "shapely already installed."
   else
     echo "shapely installing."
-    pip install shapely
+    uv pip install shapely
   fi
 
   # events language init

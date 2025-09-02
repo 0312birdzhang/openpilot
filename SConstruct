@@ -145,6 +145,7 @@ else:
       f"#third_party/mapbox-gl-native-qt/{arch}",
       "/usr/lib",
       "/usr/local/lib",
+      "/usr/lib/aarch64-linux-gnu"
     ]
 
 if GetOption('asan'):

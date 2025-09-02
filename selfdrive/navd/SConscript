@@ -1,5 +1,7 @@
 Import('qt_env', 'arch', 'common', 'messaging', 'visionipc', 'cereal', 'transformations')
 
+arch = "aarch64"
+
 map_env = qt_env.Clone()
 
 libs = ['qt_widgets', 'qt_util', 'QMapLibre', common, messaging, cereal, visionipc, transformations,
@@ -8,7 +10,7 @@ if arch == 'larch64':
   libs.append(':libEGL_mesa.so.0')
 
 if arch in ['larch64', 'aarch64', 'x86_64']:
-  if arch == 'x86_64':
+  if arch in ['x86_64', 'aarch64']:
     rpath = Dir(f"#third_party/maplibre-native-qt/{arch}/lib").srcnode().abspath
     map_env["RPATH"] += [rpath, ]
 
