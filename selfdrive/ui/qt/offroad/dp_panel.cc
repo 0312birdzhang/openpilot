@@ -7,6 +7,11 @@ void DPPanel::add_toyota_toggles() {
       QString::fromUtf8("🐉 ") + tr("Toyota / Lexus"),
       "",
     },
+    {
+      "dp_toyota_door_auto_lock_unlock",
+      tr("Enable Door Auto Lock/Unlock"),
+      "",
+    },
   };
 
   QWidget *label = nullptr;

@@ -56,6 +56,7 @@ class ToyotaSafetyFlags(IntFlag):
   STOCK_LONGITUDINAL = (2 << 8)
   LTA = (4 << 8)
   SECOC = (8 << 8)
+  LOCK_CTRL = (16 << 8)
 
 
 class ToyotaFlags(IntFlag):
@@ -78,6 +79,7 @@ class ToyotaFlags(IntFlag):
   SECOC = 2048
 
   ALKA = 2 ** 12
+  LOCK_CTRL = 2 ** 13
 
 
 def dbc_dict(pt, radar):
