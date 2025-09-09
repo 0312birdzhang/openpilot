@@ -75,7 +75,10 @@ class SelfdriveD:
       # no vipc in replay will make them ignored anyways
       ignore += ['roadCameraState', 'wideRoadCameraState']
     if os.getenv("DISABLE_DRIVER"):
-      ignore += ['driverCameraState']
+      ignore += ['driverCameraState', 'driverMonitoringState', 'wideRoadCameraState', 'driverAssistance']
+    ignore += self.sensor_packets
+    ignore += ['livePose', 'liveDelay', 'liveParameters','liveTorqueParameters']
+    ignore += ["liveCalibration", "driverMonitoringState", "longitudinalPlan", "livePose", "liveDelay", "liveParameters", "radarState", "liveTorqueParameters", "driverAssistance", "alertDebug", "driverCameraState", "wideRoadCameraState", "accelerometer", "gyroscope", "gpsLocation"]
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                    'carOutput', 'driverMonitoringState', 'longitudinalPlan', 'livePose', 'liveDelay',
                                    'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters',
@@ -116,7 +119,7 @@ class SelfdriveD:
     self.personality = self.read_personality_param()
     self.recalibrating_seen = False
     self.state_machine = StateMachine(self.alka)
-    self.rk = Ratekeeper(100, print_delay_threshold=None)
+    self.rk = Ratekeeper(50, print_delay_threshold=None)
 
     # some comma three with NVMe experience NVMe dropouts mid-drive that
     # cause loggerd to crash on write, so ignore it only on that platform
@@ -300,35 +303,36 @@ class SelfdriveD:
     has_disable_events = self.events.contains(ET.NO_ENTRY) and (self.events.contains(ET.SOFT_DISABLE) or self.events.contains(ET.IMMEDIATE_DISABLE))
     no_system_errors = (not has_disable_events) or (len(self.events) == num_events)
     if not self.sm.all_checks() and no_system_errors:
-      if not self.sm.all_alive():
-        self.events.add(EventName.commIssue)
-      elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
-      else:
-        self.events.add(EventName.commIssue)
+      pass
+      #if not self.sm.all_alive():
+      #  self.events.add(EventName.commIssue)
+      #elif not self.sm.all_freq_ok():
+      #  self.events.add(EventName.commIssueAvgFreq)
+      #else:
+      #  self.events.add(EventName.commIssue)
 
-      logs = {
-        'invalid': [s for s, valid in self.sm.valid.items() if not valid],
-        'not_alive': [s for s, alive in self.sm.alive.items() if not alive],
-        'not_freq_ok': [s for s, freq_ok in self.sm.freq_ok.items() if not freq_ok],
-      }
-      if logs != self.logged_comm_issue:
-        cloudlog.event("commIssue", error=True, **logs)
-        self.logged_comm_issue = logs
+      #logs = {
+      #  'invalid': [s for s, valid in self.sm.valid.items() if not valid],
+      #  'not_alive': [s for s, alive in self.sm.alive.items() if not alive],
+      #  'not_freq_ok': [s for s, freq_ok in self.sm.freq_ok.items() if not freq_ok],
+      #}
+      #if logs != self.logged_comm_issue:
+      #  cloudlog.event("commIssue", error=True, **logs)
+      #  self.logged_comm_issue = logs
     else:
       self.logged_comm_issue = None
 
     if not self.CP.notCar:
       if not self.sm['livePose'].posenetOK:
         self.events.add(EventName.posenetInvalid)
-      if not self.sm['livePose'].inputsOK:
-        self.events.add(EventName.locationdTemporaryError)
+      #if not self.sm['livePose'].inputsOK:
+      #  self.events.add(EventName.locationdTemporaryError)
       if not self.sm['liveParameters'].valid and cal_status == log.LiveCalibrationData.Status.calibrated and not TESTING_CLOSET and (not SIMULATION or REPLAY):
         self.events.add(EventName.paramsdTemporaryError)
 
     # conservative HW alert. if the data or frequency are off, locationd will throw an error
-    if any((self.sm.frame - self.sm.recv_frame[s])*DT_CTRL > 10. for s in self.sensor_packets):
-      self.events.add(EventName.sensorDataInvalid)
+    #if any((self.sm.frame - self.sm.recv_frame[s])*DT_CTRL > 10. for s in self.sensor_packets):
+    #  self.events.add(EventName.sensorDataInvalid)
 
     if not REPLAY:
       # Check for mismatch between openpilot and car's PCM
@@ -364,14 +368,14 @@ class SelfdriveD:
     if not SIMULATION or REPLAY:
       # Not show in first 1.5 km to allow for driving out of garage. This event shows after 5 minutes
       gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
-      if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
-        self.events.add(EventName.noGps)
+      #if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
+      #  self.events.add(EventName.noGps)
       if gps_ok:
         self.distance_traveled = 0
       self.distance_traveled += abs(CS.vEgo) * DT_CTRL
 
-      if self.sm['modelV2'].frameDropPerc > 20:
-        self.events.add(EventName.modeldLagging)
+      #if self.sm['modelV2'].frameDropPerc > 20:
+      #  self.events.add(EventName.modeldLagging)
 
     # Decrement personality on distance button press
     if self.CP.openpilotLongitudinalControl:
@@ -463,7 +467,7 @@ class SelfdriveD:
     self.pm.send('selfdriveState', ss_msg)
 
     # onroadEvents - logged every second or on change
-    if (self.sm.frame % int(1. / DT_CTRL) == 0) or (self.events.names != self.events_prev):
+    if (self.sm.frame % int(0.5 / DT_CTRL) == 0) or (self.events.names != self.events_prev):
       ce_send = messaging.new_message('onroadEvents', len(self.events))
       ce_send.valid = True
       ce_send.onroadEvents = self.events.to_msg()

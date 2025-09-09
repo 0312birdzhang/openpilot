@@ -218,7 +218,7 @@ if GetOption('compile_db'):
   env.CompilationDatabase('compile_commands.json')
 
 # Setup cache dir
-cache_dir = '/data/scons_cache' if AGNOS else '/tmp/scons_cache'
+cache_dir = '/data/scons_cache'# if AGNOS else '/tmp/scons_cache'
 CacheDir(cache_dir)
 Clean(["."], cache_dir)
 
@@ -341,10 +341,10 @@ SConscript(['panda/SConscript'])
 SConscript(['rednose/SConscript'])
 
 # Build system services
-SConscript([
-  'system/ubloxd/SConscript',
-  'system/loggerd/SConscript',
-])
+#SConscript([
+#  'system/ubloxd/SConscript',
+#  'system/loggerd/SConscript',
+#])
 if arch != "Darwin":
   SConscript([
     'system/logcatd/SConscript',
