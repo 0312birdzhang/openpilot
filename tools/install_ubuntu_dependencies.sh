@@ -54,7 +54,6 @@ function install_ubuntu_common_requirements() {
     libzstd-dev \
     libsqlite3-dev \
     libsystemd-dev \
-    libicu-dev \
     locales \
     opencl-headers \
     ocl-icd-libopencl1 \
