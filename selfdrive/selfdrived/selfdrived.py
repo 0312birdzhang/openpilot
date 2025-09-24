@@ -410,8 +410,8 @@ class SelfdriveD:
         self.distance_traveled = 0
       self.distance_traveled += abs(CS.vEgo) * DT_CTRL
 
-      if self.sm['modelV2'].frameDropPerc > 20:
-        self.events.add(EventName.modeldLagging)
+      #if self.sm['modelV2'].frameDropPerc > 20:
+      #  self.events.add(EventName.modeldLagging)
 
     # Decrement personality on distance button press
     if self.CP.openpilotLongitudinalControl:
