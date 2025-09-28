@@ -14,3 +14,7 @@ if [ -z "$AGNOS_VERSION" ]; then
 fi
 
 export STAGING_ROOT="/data/safe_staging"
+export DISABLE_DRIVER=1
+export USE_WEBCAM=1
+export LITE=1
+export ROAD_CAM=$(ls -l /dev/v4l/by-id/ |grep index0|grep Generic|awk -F'video' '{print $NF}')

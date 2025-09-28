@@ -83,8 +83,8 @@ class SelfdriveD:
     if REPLAY:
       # no vipc in replay will make them ignored anyways
       ignore += ['roadCameraState', 'wideRoadCameraState']
-    if os.getenv("DISABLE_DRIVER") or os.getenv("LITE"):
-      ignore += ['driverCameraState']
+    ignore += ['driverCameraState', "wideRoadCameraState", 'livePose', 'liveDelay', 'liveParameters', 'liveLocationKalman']
+    ignore += ["accelerometer", "gyroscope"]
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                    'carOutput', 'driverMonitoringState', 'longitudinalPlan', 'livePose', 'liveDelay',
                                    'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters',
@@ -358,8 +358,8 @@ class SelfdriveD:
         self.events.add(EventName.paramsdTemporaryError)
 
     # conservative HW alert. if the data or frequency are off, locationd will throw an error
-    if any((self.sm.frame - self.sm.recv_frame[s])*DT_CTRL > 10. for s in self.sensor_packets):
-      self.events.add(EventName.sensorDataInvalid)
+    #if any((self.sm.frame - self.sm.recv_frame[s])*DT_CTRL > 10. for s in self.sensor_packets):
+    #  self.events.add(EventName.sensorDataInvalid)
 
     if not REPLAY:
       # Check for mismatch between openpilot and car's PCM
@@ -401,6 +401,14 @@ class SelfdriveD:
 
     # TODO: fix simulator
     if not SIMULATION or REPLAY:
+      # Not show in first 1.5 km to allow for driving out of garage. This event shows after 5 minutes
+      gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
+      #if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
+      #  self.events.add(EventName.noGps)
+      if gps_ok:
+        self.distance_traveled = 0
+      self.distance_traveled += abs(CS.vEgo) * DT_CTRL
+
       if self.sm['modelV2'].frameDropPerc > 20:
         self.events.add(EventName.modeldLagging)
 
