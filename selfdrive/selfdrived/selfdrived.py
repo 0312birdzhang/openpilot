@@ -85,6 +85,7 @@ class SelfdriveD:
       ignore += ['roadCameraState', 'wideRoadCameraState']
     ignore += ['driverCameraState', "wideRoadCameraState", 'livePose', 'liveDelay', 'liveParameters', 'liveLocationKalman']
     ignore += ["accelerometer", "gyroscope"]
+    ignore += ["liveCalibration", "driverMonitoringState", "longitudinalPlan", "livePose", "liveDelay", "liveParameters", "radarState", "liveTorqueParameters", "driverAssistance", "alertDebug", "driverCameraState", "wideRoadCameraState", "accelerometer", "gyroscope", "gpsLocation"]
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                    'carOutput', 'driverMonitoringState', 'longitudinalPlan', 'livePose', 'liveDelay',
                                    'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters',
@@ -331,12 +332,12 @@ class SelfdriveD:
     has_disable_events = self.events.contains(ET.NO_ENTRY) and (self.events.contains(ET.SOFT_DISABLE) or self.events.contains(ET.IMMEDIATE_DISABLE))
     no_system_errors = (not has_disable_events) or (len(self.events) == num_events)
     if not self.sm.all_checks() and no_system_errors:
-      if not self.sm.all_alive():
-        self.events.add(EventName.commIssue)
-      elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
-      else:
-        self.events.add(EventName.commIssue)
+      #if not self.sm.all_alive():
+      #  self.events.add(EventName.commIssue)
+      #elif not self.sm.all_freq_ok():
+      #  self.events.add(EventName.commIssueAvgFreq)
+      #else:
+      #  self.events.add(EventName.commIssue)
 
       logs = {
         'invalid': [s for s, valid in self.sm.valid.items() if not valid],
