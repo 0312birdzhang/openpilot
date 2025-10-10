@@ -17,6 +17,14 @@ if [ -t 0 ]; then
   INTERACTIVE=1
 fi
 
+# Install qcom private drivers
+function install_qcom_drivers() {
+  $SUDO add-apt-repository ppa:ubuntu-qcom-iot/qcom-noble-ppa
+  $SUDO apt update
+  $SUDO apt install -y qcom-adreno-cl-dev qcom-adreno-cl1
+
+}
+
 # Install common packages
 function install_ubuntu_common_requirements() {
   $SUDO apt-get update
@@ -55,21 +63,19 @@ function install_ubuntu_common_requirements() {
     libsqlite3-dev \
     libsystemd-dev \
     locales \
-    opencl-headers \
-    ocl-icd-libopencl1 \
-    ocl-icd-opencl-dev \
     portaudio19-dev \
     qttools5-dev-tools \
     libqt5svg5-dev \
     libqt5serialbus5-dev  \
     libqt5x11extras5-dev \
     libqt5opengl5-dev \
-    xvfb
+    xvfb software-properties-common
 }
 
 # Install Ubuntu 24.04 LTS packages
 function install_ubuntu_lts_latest_requirements() {
   install_ubuntu_common_requirements
+  install_qcom_drivers
 
   $SUDO apt-get install -y --no-install-recommends \
     g++-12 \
