@@ -126,7 +126,7 @@ class SelfdriveD:
     self.personality = self.params.get("LongitudinalPersonality", return_default=True)
     self.recalibrating_seen = False
     self.state_machine = StateMachine()
-    self.rk = Ratekeeper(50, print_delay_threshold=None)
+    self.rk = Ratekeeper(100, print_delay_threshold=None)
 
     # some comma three with NVMe experience NVMe dropouts mid-drive that
     # cause loggerd to crash on write, so ignore it only on that platform
@@ -504,7 +504,7 @@ class SelfdriveD:
     self.pm.send('selfdriveState', ss_msg)
 
     # onroadEvents - logged every second or on change
-    if (self.sm.frame % int(0.5 / DT_CTRL) == 0) or (self.events.names != self.events_prev):
+    if (self.sm.frame % int(1.0 / DT_CTRL) == 0) or (self.events.names != self.events_prev):
       ce_send = messaging.new_message('onroadEvents', len(self.events))
       ce_send.valid = True
       ce_send.onroadEvents = self.events.to_msg()
