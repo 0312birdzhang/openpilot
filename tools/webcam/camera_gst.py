@@ -14,9 +14,13 @@ class Camera:
     print(f"Opening {cam_type_state} at {camera_id}")
 
     #self.cap = cv.VideoCapture(camera_id)
+    """gst-launch-1.0 v4l2src device=/dev/video0 io-mode=2 ! \
+image/jpeg, width=1920, height=1080, framerate=30/1, format=MJPG ! \
+jpegdec ! videoconvert ! videorate ! video/x-raw,framerate=20/1 ! appsink
+    """
     self.cap = cv.VideoCapture(f"gst-launch-1.0 v4l2src device={camera_id} io-mode=2 ! "\
                                + "image/jpeg, width=1920, height=1080, framerate=30/1, format=MJPG ! jpegdec ! videoconvert ! " \
-                               + "video/x-raw,framerate=20/1 ! videoconvert !" \
+                               + " videorate ! video/x-raw,framerate=20/1 !"
                                + "appsink", cv.CAP_GSTREAMER)
 
     self.W = self.cap.get(cv.CAP_PROP_FRAME_WIDTH)
@@ -32,6 +36,8 @@ class Camera:
       ret, frame = self.cap.read()
       if not ret:
         break
+      #if int(self.cap.get(cv2.CAP_PROP_POS_FRAMES)) % 3 == 0:
+      #  continue
       yuv = Camera.bgr2nv12(frame)
       yield yuv.data.tobytes()
     self.cap.release()
